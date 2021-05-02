@@ -1,27 +1,25 @@
+# Importing essential libraries
 from flask import Flask, render_template, request
 import pickle
-from sklearn.feature_extraction.text import TfidfVectorizer
 
-file_name = 'Spam_classifier.pkl'
-classifier = pickle.load(open(file_name, 'rb'))
-tf = TfidfVectorizer(max_features=500)
+# Load the Multinomial Naive Bayes model and CountVectorizer object from disk
+filename = 'spam-sms-mnb-model.pkl'
+classifier = pickle.load(open(filename, 'rb'))
+cv = pickle.load(open('cv-transform.pkl','rb'))
 app = Flask(__name__)
-
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+	return render_template('home.html')
 
-
-@app.route('/predict', methods=['POST'])
+@app.route('/predict',methods=['POST'])
 def predict():
     if request.method == 'POST':
-        message = request.form['message']
-        data = [message]
-        temp = tf.transform(data).toarray()
-        my_predict = classifier.predict(temp)
-        return render_template('result.html', prediction=my_predict)
-
+    	message = request.form['message']
+    	data = [message]
+    	vect = cv.transform(data).toarray()
+    	my_prediction = classifier.predict(vect)
+    	return render_template('result.html', prediction=my_prediction)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+	app.run(debug=True)
